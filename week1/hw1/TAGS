@@ -1,0 +1,55 @@
+
+./Setup.hs,15
+main main1,2
+
+./Main.hs,37
+module Main Main0,1
+main main4,5
+
+./dist-newstyle/build/x86_64-linux/ghc-8.6.3/hw1-0.1.0.0/build/autogen/Paths_hw1.hs,1079
+module Paths_hw1 Paths_hw13,4
+catchIO catchIO17,18
+catchIO catchIO25,26
+version version27,28
+bindir, libdir, dynlibdir, datadir, libexecdir, sysconfdir sysconfdir29,30
+bindir, libdir, dynlibdir, datadir, libexecdir,libexecdir29,30
+bindir, libdir, dynlibdir, datadir,datadir29,30
+bindir, libdir, dynlibdir,dynlibdir29,30
+bindir, libdir,libdir29,30
+bindir,bindir29,30
+libdir libdir32,33
+dynlibdir dynlibdir33,34
+datadir datadir34,35
+libexecdir libexecdir35,36
+sysconfdir sysconfdir36,37
+getBinDir, getLibDir, getDynLibDir, getDataDir, getLibexecDir, getSysconfDir getSysconfDir38,39
+getBinDir, getLibDir, getDynLibDir, getDataDir, getLibexecDir,getLibexecDir38,39
+getBinDir, getLibDir, getDynLibDir, getDataDir,getDataDir38,39
+getBinDir, getLibDir, getDynLibDir,getDynLibDir38,39
+getBinDir, getLibDir,getLibDir38,39
+getBinDir,getBinDir38,39
+getLibDir getLibDir40,41
+getDynLibDir getDynLibDir41,42
+getDataDir getDataDir42,43
+getLibexecDir getLibexecDir43,44
+getSysconfDir getSysconfDir44,45
+getDataFileName getDataFileName46,47
+
+./MyLib.hs,502
+module MyLib MyLib0,1
+someFunc someFunc2,3
+toDigitsRev toDigitsRev24,25
+revList revList25,26
+toDigits toDigits26,27
+revList revList36,37
+toDigitsRev toDigitsRev40,41
+doubleEveryOther doubleEveryOther60,61
+doubleEveryOtherHelper doubleEveryOtherHelper61,62
+doubleEveryOther doubleEveryOther67,68
+sumDigits sumDigits82,83
+sumDigitsHelper sumDigitsHelper83,84
+sumDigits sumDigits88,89
+validate validate101,102
+type Peg Peg137,138
+type Move Move138,139
+hanoi hanoi139,140
