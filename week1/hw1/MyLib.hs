@@ -22,23 +22,31 @@ Example: toDigits (-17) == []
 
 
 
-toDigitsRev :: Integer -> [Integer]
-revList :: [Integer] -> [Integer] 
-toDigits :: Integer -> [Integer]
+
 
 {- At each recursive call, take the remainer of the number when divided with 10; this
 gives the last digit of that number; append a list with the digit to the digits of the
-quotient -} 
-toDigits n
-  | n <= 0 = []
-  | otherwise =  (toDigits (n `div` 10)) ++ [(n `mod` 10)]
+quotient -}
+toDigitsHelper :: Integer -> [Integer] -> [Integer]
+toDigitsHelper n acc
+  | n <= 0 = acc
+  | otherwise = toDigitsHelper (n `div` 10) ((n `mod` 10) : acc)
+
+toDigits :: Integer -> [Integer]
+toDigits n = toDigitsHelper n []
 
 {-helper function to reverse lists -}
-revList [] = []
-revList (x : xs) = (revList xs) ++ [x] -- This operation is O(1)
+revListHelper ::  [Integer] -> [Integer] -> [Integer]
+revListHelper [] acc = acc
+revListHelper (x : xs) acc = revListHelper xs (x : acc)
 
-{- reverse list of digits -} 
-toDigitsRev n = revList (toDigits n)
+
+revList :: [Integer] -> [Integer]
+revList xs = revListHelper xs [] 
+
+{- reverse list of digits -}
+toDigitsRev :: Integer -> [Integer]
+toDigitsRev = revList . toDigits 
 
 
 {-
@@ -65,7 +73,7 @@ doubleEveryOtherHelper [] = []
 doubleEveryOtherHelper (x : []) = (x : []) -- is there any 'as' construct? 
 doubleEveryOtherHelper (x : x' : xs') =  x : (2 * x') : (doubleEveryOtherHelper xs')
 
-doubleEveryOther xs = revList (doubleEveryOtherHelper (revList xs))
+doubleEveryOther = revList . doubleEveryOtherHelper . revList 
 
 
 {- Exercise 3 The output of doubleEveryOther has a mix of one-digit
@@ -101,7 +109,7 @@ Example: validate 4012888888881882 = False -}
 
 validate :: Integer -> Bool
 
-validate n = sumDigits (doubleEveryOther(toDigits n)) `mod` 10 == 0 
+validate = (0==) . (mod 10) . sumDigits . doubleEveryOther . toDigits 
 
 {-Exercise 5: The Towers of Hanoi is a classic puzzle with a solution
 that can be described recursively. Disks of different sizes are stacked

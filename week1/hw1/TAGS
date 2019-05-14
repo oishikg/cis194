@@ -35,21 +35,21 @@ getLibexecDir getLibexecDir43,44
 getSysconfDir getSysconfDir44,45
 getDataFileName getDataFileName46,47
 
-./MyLib.hs,502
+./MyLib.hs,520
 module MyLib MyLib0,1
 someFunc someFunc2,3
-toDigitsRev toDigitsRev24,25
-revList revList25,26
-toDigits toDigits26,27
-revList revList36,37
-toDigitsRev toDigitsRev40,41
-doubleEveryOther doubleEveryOther60,61
-doubleEveryOtherHelper doubleEveryOtherHelper61,62
-doubleEveryOther doubleEveryOther67,68
-sumDigits sumDigits82,83
-sumDigitsHelper sumDigitsHelper83,84
-sumDigits sumDigits88,89
-validate validate101,102
-type Peg Peg137,138
-type Move Move138,139
-hanoi hanoi139,140
+toDigitsHelper toDigitsHelper29,30
+toDigits toDigits34,35
+revListHelper revListHelper38,39
+revList revList43,44
+toDigitsRev toDigitsRev47,48
+doubleEveryOther doubleEveryOther68,69
+doubleEveryOtherHelper doubleEveryOtherHelper69,70
+doubleEveryOther doubleEveryOther75,76
+sumDigits sumDigits90,91
+sumDigitsHelper sumDigitsHelper91,92
+sumDigits sumDigits96,97
+validate validate109,110
+type Peg Peg145,146
+type Move Move146,147
+hanoi hanoi147,148
