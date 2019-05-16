@@ -64,6 +64,75 @@ skips xs = skipsHelper xs [] (length xs)
 
 
 
+{- Exercise 2 : Local maxima
+
+A local maximum of a list is an element of the list which is strictly
+greater than both the elements immediately before and after it. For
+example, in the list [2,3,4,1,5], the only local maximum is 4, since
+it is greater than the elements immediately before and after it (3 and
+1). 5 is not a local maximum since there is no element that comes
+after it.
+
+Write a function
+
+localMaxima :: [Integer] -> [Integer]
+
+which finds all the local maxima in the input list and returns them in
+order. For example:
+localMaxima [2,9,5,6,1] == [9,6]
+localMaxima [2,3,4,1,5] == [4]
+localMaxima [1,2,3,4,5] == [] -} 
+
+{- algebraic data-type to capture the notion of the neighbouring values of a given
+element in the list; the neighbourhood of some value v is the value
+Neighbourhood prev v next, where prev is the value before v and next is the value
+after v -} 
+data Neighbourhood = Neighbourhood Integer Integer Integer
+                   | MissingNeighbour Integer
+  deriving (Show, Eq)
+
+{- function to take a list, and convert each element into its correponsing
+neighbourhood -}
+intListToNeighbourhoodListHelper :: (Maybe Integer) -> [Integer] -> [Neighbourhood]
+
+intListToNeighbourhoodListHelper prev [] = []
+intListToNeighbourhoodListHelper prev (x : []) = [MissingNeighbour x]
+intListToNeighbourhoodListHelper Nothing (x : xs) =
+  (MissingNeighbour x) : (intListToNeighbourhoodListHelper (Just x) xs) 
+intListToNeighbourhoodListHelper (Just prev) (x : x' : xs') =
+  (Neighbourhood prev x  x') :
+  (intListToNeighbourhoodListHelper (Just x) (x' : xs'))
+
+
+intListToNeighbourhoodList :: [Integer] -> [Neighbourhood]
+intListToNeighbourhoodList = intListToNeighbourhoodListHelper Nothing 
+
+{-function to take a neighbourhood list and convert it back to the integer list -} 
+neighbourhoodListToIntList :: [Neighbourhood] -> [Integer]
+neighbourhoodListToIntList =
+  map (\x ->
+         case x of
+           Neighbourhood _ v _ -> v
+           MissingNeighbour v -> v)
+
+
+{- Function to find local maxima -} 
+localMaxima :: [Integer] -> [Integer] 
+
+localMaxima  = neighbourhoodListToIntList .
+               (filter (\x ->
+                          case x of
+                            MissingNeighbour _ -> False
+                            Neighbourhood l v r -> (v > l) && (v > r)))
+                              . intListToNeighbourhoodList 
+
+
+
+
+
+
+
+
 
 
 
