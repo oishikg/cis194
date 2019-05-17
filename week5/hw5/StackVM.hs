@@ -13,8 +13,10 @@ data StackExp = PushI Integer
               | And
               | Or
                 deriving Show
-
+-- refers to the operating stack
 type Stack   = [StackVal]
+
+-- refers to the program that is input 
 type Program = [StackExp]
 
 -- Execute the given program. Returns either an error message or the
