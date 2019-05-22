@@ -69,8 +69,8 @@ eval :: ExprT -> Integer
 eval exp =
   case exp of
     Lit n -> n
-    Add e1 e2 -> (eval e1) + (eval e2)
-    Mul e1 e2 -> (eval e1) * (eval e2) 
+    Add e1 e2 -> eval e1 + eval e2
+    Mul e1 e2 -> eval e1 * eval e2 
 
 -- testEval eval
 
@@ -188,9 +188,9 @@ class Expr t where
 
 {- ExprT as an instance of the type class -} 
 instance Expr ExprT where
-  lit e = Lit e
-  add e1 e2 = Add e1 e2
-  mul e1 e2 = Mul e1 e2
+  lit = Lit
+  add = Add 
+  mul = Mul 
 
 
 {- Exercise 4:
@@ -247,26 +247,23 @@ the same syntactic expression! -}
 
 {- Integers as an instance of the Expr type class -}
 instance Expr Integer where
-  lit n = n
-  add n1 n2 = n1 + n2
-  mul n1 n2 = n1 * n2
+  lit = id
+  add = (+)
+  mul = (*)
 
 {- Booleans as an instance of the Expr type class -}
 instance Expr Bool where
-  lit n
-    | n <= 0 = False
-    | otherwise = True
-
-  add bv1 bv2 = bv1 || bv2
-  mul bv1 bv2 = bv1 && bv2 
+  lit = (> 0)
+  add = (||)
+  mul = (&&)
   
 {- Defining wrappers for MinMax -}
 newtype MinMax = MinMax Integer deriving (Eq, Show)
 
 instance Expr MinMax where
-  lit n = MinMax n
-  add (MinMax n1) (MinMax n2) = MinMax (max n1 n2)
-  mul (MinMax n1) (MinMax n2) = MinMax (min n1 n2)
+  lit = MinMax 
+  add (MinMax n1) (MinMax n2) = MinMax $ max n1 n2
+  mul (MinMax n1) (MinMax n2) = MinMax $ min n1 n2
 
 
 {- Defining wrappers for Mod7 -}
@@ -274,8 +271,8 @@ newtype Mod7 = Mod7 Integer deriving (Eq, Show)
 
 instance Expr Mod7 where
   lit n = Mod7 (n `mod` 7)
-  add (Mod7 n1) (Mod7 n2) = Mod7 ((n1 + n2) `mod` 7)
-  mul (Mod7 n1) (Mod7 n2) = Mod7 ((n1 * n2) `mod` 7)
+  add (Mod7 n1) (Mod7 n2) = lit $ n1 + n2
+  mul (Mod7 n1) (Mod7 n2) = lit $ n1 * n2
 
 {- subject to the constraint that the type a is an instance of the Expr type class,
 testExp has type Maybe a -} 
@@ -377,5 +374,10 @@ test str =
 Howevr, if we also wanted to compile boolean expressions, how could we redefine
 the Expr type class to make it more (expressive?) ? -} 
 
+-- Haskell looks at where the function is used to infer type constraints: in this file
+-- you use compile in your test function. In that function it knows that compile str
+-- returns a Maybe a and then it knows that the a is given as argument to SVM.stackVM, which
+-- takes a SVM.Program - so the type signature of compile has to be
 
+-- str -> Maybe SVM.Program
 
