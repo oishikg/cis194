@@ -70,16 +70,9 @@ fibEff n =
 
 -- my implementation of fibs2
 fibs2 :: [Integer]
-fibs2 = makeFibList [0..] 0 1
+fibs2 = makeFibList 0 1
   where
-    makeFibList (x : xs) fPrev2 fPrev1
-      | x == 0 = 0 : (makeFibList xs 0 1)
-      | x == 1 = 1 : (makeFibList xs 0 1)
-      | otherwise =
-          let fx = fPrev2 + fPrev1
-          in fx : (makeFibList xs (fPrev1) (fx))
-
--- Can this be written more elegantly using a higher order prelude function?
+    makeFibList a b = a : makeFibList (b) (a + b)
 
 {- Streams
 
@@ -131,7 +124,7 @@ instance Show a => Show (Stream a) where
 -- showList is a predefined operation in Show which returns a value of type
 -- ShowS. Values of this type are functions String -> String, thus allowing the
 -- the resultant string to be prepended to a given string
-  show s = ((showList . (take 20) . streamToList) s) ""
+  show  = show . (take 20) . streamToList 
 
 {- Exercise 4 :
 
@@ -310,7 +303,7 @@ instance Num (Stream Integer) where
   
   negate (Cons a0 s) = Cons (-a0) (negate s)
   
-  (+) (Cons a0 s) (Cons b0 s') = Cons ((+) a0 b0) ((+) s s')
+  (+) (Cons a0 s) (Cons b0 s') = Cons (a0 + b0) (s + s')
   
   (*) (Cons a0 restOfA) (sb @ (Cons b0 restOfB))
     = Cons (a0 * b0) ((numTimesStream a0 restOfB) + restOfA * sb)
@@ -369,7 +362,10 @@ fibs3 :: Stream Integer
 -- https://austinrochford.com/posts/2013-11-01-generating-functions-and-fibonacci-numbers.html
 
 -- the closed form solution of F(x) must be expressed as a power series, following
--- which we may match the coefficients term by term to get the required F_ n 
+-- which we may match the coefficients term by term to get the required F_ n
+
+-- fibs3 :: Stream Integer
+-- fibs3 = (x) / () 
 
 
 {- Exercise 7 (Optional)
