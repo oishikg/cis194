@@ -31,12 +31,12 @@ instance Sized Score where
   size (Score n) = Size n
 
 -- (+) as defining a monoid and a semi-group on Score
--- instance Semigroup Score where
---  (<>) = (+)
+instance Semigroup Score where
+ (<>) = (+)
 
 instance Monoid Score where
   mempty  = Score 0
-  mappend = (+)
+--  mappend = (+)
     
 
 

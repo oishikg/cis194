@@ -18,16 +18,16 @@ extra-source-files:  CHANGELOG.md
 
 library
   exposed-modules:     JoinList
-  -- other-modules:
+  other-modules:     Buffer,Editor,Scrabble,Sized
   -- other-extensions:
-  build-depends:       base ^>=4.8.2.0
+  build-depends:       base ^>=4.12.0.0, mtl
   -- hs-source-dirs:
   default-language:    Haskell2010
 
 executable testEditor
   main-is:             Main.hs
-  other-modules:       JoinList
+  other-modules:       JoinList, Buffer, Editor, Scrabble, Sized
   -- other-extensions:
-  build-depends:       base ^>=4.8.2.0, testEditor
+  build-depends:       base ^>=4.12.0.0, testEditor, mtl, MonadRandom
   -- hs-source-dirs:
   default-language:    Haskell2010

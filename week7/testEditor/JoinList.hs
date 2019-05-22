@@ -1,8 +1,175 @@
--- The prompt for this p-set is too complex to be copy pasted onto this file; see
--- PDF which will be attached to the doc
-
 {-# LANGUAGE FlexibleInstances          #-}
 {-# LANGUAGE GeneralizedNewtypeDeriving #-}
+
+-- Note: The prompt for this assignment is quite long and involved. See the pdf
+-- file that has been committed if the commented version of the prompt is not
+-- clear.
+
+{------------------------- Editors and Buffers -------------------------}
+
+-- You have a working user interface for the word processor implemented
+-- in the file Editor.hs. The Editor module defines functionality
+-- for working with documents implementing the Buffer type
+-- class found in Buffer.hs. Take a look at Buffer.hs to see the operations
+-- that a document representation must support to work with
+-- the Editor module. The intention of this design is to separate the
+-- front-end interface from the back-end representation, with the type
+-- class intermediating the two. This allows for the easy swapping of
+-- different document representation types without having to change
+-- the Editor module.
+
+-- The editor interface is as follows:
+-- • v — view the current location in the document
+-- • n — move to the next line
+-- • p — move to the previous line
+-- • l — load a file into the editor
+-- • e — edit the current line
+-- • q — quit
+-- • ? — show this list of commands
+
+-- To move to a specific line, enter the line number you wish to navigate
+-- to at the prompt. The display shows you up to two preceding
+-- and two following lines in the document surrounding the current
+-- line, which is indicated by an asterisk. The prompt itself indicates the
+-- current value of the entire document.
+
+-- To run the text-buffer, use `cabal new-build` to build the project, and then
+-- execute the binary with `cabal new-exec testEditor`. Here is an example of the run:
+
+-- *115> l carol.txt
+-- 235599> ?
+-- v --- view the current location in the document
+-- n --- move to the next line
+-- p --- move to the previous line
+-- l --- load a file into the editor
+-- e --- edit the current line
+-- q --- quit
+-- ? --- show this list of commands
+-- 235599> v
+-- *0: The Project Gutenberg EBook of A Christmas Carol, by Charles Dickens
+--  1: 
+--  2: This eBook is for the use of anyone anywhere at no cost and with
+-- 235599> n
+--  0: The Project Gutenberg EBook of A Christmas Carol, by Charles Dickens
+-- *1: 
+--  2: This eBook is for the use of anyone anywhere at no cost and with
+--  3: almost no restrictions whatsoever.  You may copy it, give it away or
+-- 235599> ?
+-- v --- view the current location in the document
+-- n --- move to the next line
+-- p --- move to the previous line
+-- l --- load a file into the editor
+-- e --- edit the current line
+-- q --- quit
+-- ? --- show this list of commands
+-- 235599> 3640
+--  3638: 
+--  3639: "An intelligent boy!" said Scrooge. "A remarkable boy!
+-- *3640: Do you know whether they've sold the prize Turkey that
+--  3641: was hanging up there?--Not the little prize Turkey: the
+--  3642: big one?"
+-- 235599> e
+-- Replace line 3640: "Hello Haskell"
+-- 235523> 3640
+--  3638: 
+--  3639: "An intelligent boy!" said Scrooge. "A remarkable boy!
+-- *3640: "Hello Haskell"
+--  3641: was hanging up there?--Not the little prize Turkey: the
+--  3642: big one?"
+-- 235523> ?
+-- v --- view the current location in the document
+-- n --- move to the next line
+-- p --- move to the previous line
+-- l --- load a file into the editor
+-- e --- edit the current line
+-- q --- quit
+-- ? --- show this list of commands
+-- 235523> p
+--  3637: "I should hope I did," replied the lad.
+--  3638: 
+-- *3639: "An intelligent boy!" said Scrooge. "A remarkable boy!
+--  3640: "Hello Haskell"
+--  3641: was hanging up there?--Not the little prize Turkey: the
+-- 235523> p
+--  3636: 
+--  3637: "I should hope I did," replied the lad.
+-- *3638: 
+--  3639: "An intelligent boy!" said Scrooge. "A remarkable boy!
+--  3640: "Hello Haskell"
+
+-- You will be implementing a lightweight,
+-- tree-like structure, both for holding the data and caching the
+-- metadata. This data structure is referred to as a join-list. A data type
+-- definition for such a data structure might look like this:
+
+-- data JoinListBasic a = Empty
+-- | Single a
+-- | Append (JoinListBasic a) (JoinListBasic a)
+
+-- The intent of this data structure is to directly represent append
+-- operations as data constructors. This has the advantage of making
+-- append an O(1) operation: sticking two JoinLists together simply
+-- involves applying the Append data constructor. To make this more
+-- explicit, consider the function
+
+-- jlbToList :: JoinListBasic a -> [a]
+-- jlbToList Empty = []
+-- jlbToList (Single a) = [a]
+-- jlbToList (Append l1 l2) = jlbToList l1 ++ jlbToList l2
+
+-- If jl is a JoinList, we can think of it as a representation of the list
+-- jlbToList jl where some append operations have been “deferred”.
+
+-- Such a structure makes sense for text editing applications as it
+-- provides a way of breaking the document data into pieces that can
+-- be processed individually, rather than having to always traverse the
+-- entire document. This structure is also what you will be annotating
+-- with the metadata you want to track.
+
+
+-- The JoinList definition to use for this assignment is
+
+-- data JoinList m a = Empty
+-- | Single m a
+-- | Append m (JoinList m a) (JoinList m a)
+-- deriving (Eq, Show)
+
+-- You should copy this definition into a Haskell module named JoinList.hs.
+-- The m parameter will be used to track monoidal annotations to the
+-- structure. The idea is that the annotation at the root of a JoinList
+-- will always be equal to the combination of all the annotations on
+-- the Single nodes (according to whatever notion of “combining” is
+-- defined for the monoid in question). Empty nodes do not explicitly
+-- store an annotation, but we consider them to have an annotation of
+-- mempty (that is, the identity element for the given monoid).
+
+-- For example,
+
+-- Append (Product 210)
+-- (Append (Product 30)
+-- (Single (Product 5) ’y’)
+-- (Append (Product 6)
+-- (Single (Product 2) ’e’)
+-- (Single (Product 3) ’a’)))
+-- (Single (Product 7) ’h’)
+
+-- is a join-list storing four values: the character ’y’ with annotation
+-- 5, the character ’e’ with annotation 2, ’a’ with annotation 3, and
+-- ’h’ with annotation 7. (See Figure 1 for a graphical representation of
+-- the same structure.) Since the multiplicative monoid is being used,
+-- each Append node stores the product of all the annotations below it.
+-- The point of doing this is that all the subcomputations needed to
+-- compute the product of all the annotations in the join-list are cached.
+-- If we now change one of the annotations, say, the annotation on ’y’,
+-- we need only recompute the annotations on nodes above it in the
+-- tree. In particular, in this example we don’t need to descend into the
+-- subtree containing ’e’ and ’a’, since we have cached the fact that
+-- their product is 6. This means that for balanced join-lists, it takes
+-- only O(log n) time to rebuild the annotations after making an edit.
+
+{------------------------- END OF CONTEXT -------------------------}
+
+
 module JoinList where
 
 import           Buffer
@@ -82,7 +249,7 @@ tag (Append m _ _) = m
 -- which provides a method for obtaining a Size from a value.
 -- Use the Sized type class to write the following functions.
 
--- 2.1 :
+{------------------------- QN 2.1 -------------------------}
 
 -- Implement the function
 
@@ -153,7 +320,8 @@ indexJ n (Append m l1 l2) =
 
 -- test indexJ with jl1, jl2, jl3, jl4,
 
--- QN 2.2 :
+{------------------------- QN 2.2 -------------------------}
+
 
 -- Implement the function
 
@@ -183,8 +351,7 @@ dropJ n (Append m l1 l2) =
       EQ -> l2
       LT -> (dropJ n l1) +++ l2
 
-
--- QN 2.3 :
+{------------------------- QN 2.3 -------------------------}
 
 -- Finally, implement the function
 
@@ -348,6 +515,7 @@ testValue = value
 -- demonstration described in the section  Editors and Buffers  does
 -- not exhibit delays when showing the prompt
 
+-- To run the buffer, see instructions at the top of the file
 
 
 
