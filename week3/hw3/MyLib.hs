@@ -1,5 +1,5 @@
 module MyLib where
-
+import Data.Bool
 
 
 {- Exercise 1
@@ -21,49 +21,60 @@ skips [True,False] == [[True,False], [False]]
 skips [] == []
 Note that the output should be the same length as the input. -}
 
-listToPairListHelper :: [a] -> Int -> [(a, Int)]
-listToPairListHelper [] _ = []
-listToPairListHelper (x : xs) n = (x, n) : (listToPairListHelper xs (n + 1))
+-- listToPairListHelper :: Int -> [a] -> [(a, Int)]
+-- listToPairListHelper _ [] = []
+-- listToPairListHelper n (x : xs) = (x, n) : (listToPairListHelper (n+1) xs)
 
-{- given a list, convert to a list of pairs such that the nth element x is represented
-in this list of pairs as (n,x) -}
-listToPairList :: [a]  -> [(a, Int)]
-listToPairList xs = listToPairListHelper xs 1
+-- {- given a list, convert to a list of pairs such that the nth element x is represented
+-- in this list of pairs as (n,x) -}
+-- listToPairList :: [a]  -> [(a, Int)]
+-- listToPairList = listToPairListHelper 1
 
-{- covert a list of pairs back to the original list -}
-pairListToList :: [(a, Int)] -> [a]
-pairListToList xs = map (\(n, _) -> n) xs
+-- {- covert a list of pairs back to the original list -}
+-- pairListToList :: [(a, Int)] -> [a]
+-- pairListToList xs = map fst xs
 
-{- given a list, obtain the required output for skips by :
+-- {- given a list, obtain the required output for skips by :
 
- (a) converting the list into a list of pairs
- (b) filtering the list based on n
- (c) converting the pair list back to the list
+--  (a) converting the list into a list of pairs
+--  (b) filtering the list based on n
+--  (c) converting the pair list back to the list
 
-the functions for (a), (b), (c) are composed to give the resultant skippedList, which
-is then appended to the accumulator acc-}
+-- the functions for (a), (b), (c) are composed to give the resultant skippedList, which
+-- is then appended to the accumulator acc-}
 
-skipsHelper :: [a] -> [[a]] -> Int -> [[a]]
-skipsHelper xs acc n
-  | n == 0 = acc
-  | otherwise =
-      let skippedList = 
-            ((pairListToList . (filter (\(_, x) -> x `mod` n == 0 ))
-               . listToPairList) xs) 
-      in skipsHelper xs (skippedList : acc) (n - 1) 
+-- skipsHelper :: [a] -> [[a]] -> Int -> [[a]]
+-- skipsHelper xs acc n
+--   | n == 0 = acc
+--   | otherwise =
+--       let skippedList = 
+--             ((pairListToList . (filter (\(_, x) -> x `mod` n == 0 ))
+--                . listToPairList) xs) 
+--       in skipsHelper xs (skippedList : acc) (n - 1) 
   
-{- Non-tail-recursive version
-skipsHelper :: [a] -> Int -> [[a]]
-skipsHelper xs n
-  | n == (length xs + 1) = []
-  | otherwise =
-    ((pairListToList . (filter (\(_, x) -> x `mod` n == 0 )) . listToPairList) xs)
-      : (skipsHelper xs (n + 1)) -}
+-- {- Non-tail-recursive version
+-- skipsHelper :: [a] -> Int -> [[a]]
+-- skipsHelper xs n
+--   | n == (length xs + 1) = []
+--   | otherwise =
+--     ((pairListToList . (filter (\(_, x) -> x `mod` n == 0 )) . listToPairList) xs)
+--       : (skipsHelper xs (n + 1)) -}
 
-{- see comment for skipsHelper-}
+-- {- see comment for skipsHelper-}
+-- skips :: [a] -> [[a]]
+-- skips xs = skipsHelper xs [] (length xs) 
+
+
+{- alternative implementation -}
+pickNth :: [a] -> Int -> [a]
+pickNth xs n =
+  case drop (n - 1) xs of
+    [] -> []
+    v' : vs' -> v' : (pickNth vs' n)
+
 skips :: [a] -> [[a]]
-skips xs = skipsHelper xs [] (length xs) 
-
+skips xs = map (pickNth xs) [1..(length xs)]
+  
 
 
 {- Exercise 2 : Local maxima
@@ -95,38 +106,68 @@ data Neighbourhood = Neighbourhood Integer Integer Integer
 
 {- function to take a list, and convert each element into its correponsing
 neighbourhood -}
-intListToNeighbourhoodListHelper :: (Maybe Integer) -> [Integer] -> [Neighbourhood]
+-- intListToNeighbourhoodListHelper :: (Maybe Integer) -> [Integer] -> [Neighbourhood]
 
-intListToNeighbourhoodListHelper prev [] = []
-intListToNeighbourhoodListHelper prev (x : []) = [MissingNeighbour x]
-intListToNeighbourhoodListHelper Nothing (x : xs) =
-  (MissingNeighbour x) : (intListToNeighbourhoodListHelper (Just x) xs) 
-intListToNeighbourhoodListHelper (Just prev) (x : x' : xs') =
-  (Neighbourhood prev x  x') :
-  (intListToNeighbourhoodListHelper (Just x) (x' : xs'))
-
-
-intListToNeighbourhoodList :: [Integer] -> [Neighbourhood]
-intListToNeighbourhoodList = intListToNeighbourhoodListHelper Nothing 
-
-{-function to take a neighbourhood list and convert it back to the integer list -} 
-neighbourhoodListToIntList :: [Neighbourhood] -> [Integer]
-neighbourhoodListToIntList =
-  map (\x ->
-         case x of
-           Neighbourhood _ v _ -> v
-           MissingNeighbour v -> v)
+-- intListToNeighbourhoodListHelper prev [] = []
+-- intListToNeighbourhoodListHelper prev (x : []) = [MissingNeighbour x]
+-- intListToNeighbourhoodListHelper Nothing (x : xs) =
+--   (MissingNeighbour x) : (intListToNeighbourhoodListHelper (Just x) xs) 
+-- intListToNeighbourhoodListHelper (Just prev) (x : x' : xs') =
+--   (Neighbourhood prev x  x') :
+--   (intListToNeighbourhoodListHelper (Just x) (x' : xs'))
 
 
-{- Function to find local maxima -} 
-localMaxima :: [Integer] -> [Integer] 
+-- intListToNeighbourhoodList :: [Integer] -> [Neighbourhood]
 
-localMaxima  = neighbourhoodListToIntList .
-               (filter (\x ->
-                          case x of
-                            MissingNeighbour _ -> False
-                            Neighbourhood l v r -> (v > l) && (v > r)))
-                              . intListToNeighbourhoodList 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- intListToNeighbourhoodList = intListToNeighbourhoodListHelper Nothing 
+
+-- {-function to take a neighbourhood list and convert it back to the integer list -} 
+-- neighbourhoodListToIntList :: [Neighbourhood] -> [Integer]
+-- neighbourhoodListToIntList =
+--   map (\x ->
+--          case x of
+--            Neighbourhood _ v _ -> v
+--            MissingNeighbour v -> v)
+
+
+-- {- Function to find local maxima -} 
+-- localMaxima :: [Integer] -> [Integer] 
+
+-- localMaxima  = neighbourhoodListToIntList .
+--                (filter (\x ->
+--                           case x of
+--                             MissingNeighbour _ -> False
+--                             Neighbourhood l v r -> (v > l) && (v > r)))
+--                               . intListToNeighbourhoodList
+
+-- better implementation 
+localMaxima :: [Integer] -> [Integer]
+-- localMaxima [] = []
+-- localMaxima [x] = []
+-- localMaxima [x, x'] = []
+localMaxima (x : x' : x'' : xs'') =
+  if (x < x') && (x' > x'')
+  then x' : (localMaxima $ x' : x'' : xs'')
+  else (localMaxima $ x' : x'' : xs'')
+localMaxima _ = []   
+
 
 {-Exercise 3 : Histogram
 
@@ -176,38 +217,25 @@ data Frequency = Frequency Int
 a pair (p, Frequency f) implies that the digit p occurs f times in the input list 
 -} 
 
-constructFrequencyListHelper :: [Int] -> Int -> [Frequency]
-constructFrequencyListHelper xs n 
-  | n == 10 = []
-  | otherwise =
-    let freqN = (length . (filter (\x -> x == n))) xs
-    in (Frequency freqN) : (constructFrequencyListHelper xs (n + 1))
-{-- Note: this function could be implemented much more efficiently if we first
-sorted xs, and then dropped freqN elements at each recursive call -}
 
 {- function to take a list of digits and construct a frequency list -}
 {-constructFrequencyList :: [Int] -> [FrequencyList] -}
 constructFrequencyList :: [Int] -> [Frequency]
 constructFrequencyList xs =
-  constructFrequencyListHelper xs 0
+  map (\n -> Frequency $ length $ (filter (\x -> x == n)) xs) [0..9]
 
 
 {- function to generate a row in the output string -}
 constructRow :: [Frequency] -> String
-constructRow fs =
-  foldl (\str (Frequency f) ->
-            case (compare f 0) of
-              EQ -> ' ' : str
-              _ -> '*' : str) "" fs
+constructRow =
+  map (\(Frequency f) -> bool '*' ' ' (f == 0)) 
+
 
 {- function which, given an input frequency list, reduces only positive frequency
 values by 1 -}
 reduceFrequencyByOne :: [Frequency] -> [Frequency]
 reduceFrequencyByOne =
-  map (\ (p @ (Frequency f)) ->
-         case (compare f 0) of
-           EQ -> p
-           _ -> (Frequency (f-1)))
+  map (\(Frequency f) -> bool (Frequency $ f - 1) (Frequency f) (f == 0))
 
 {- function to check if a given frequency list has any positive frequency values left
 -}
@@ -215,14 +243,16 @@ frequencyListNotEmpty :: [Frequency] -> Bool
 frequencyListNotEmpty =
   any (\(Frequency f) -> f > 0) 
 
+
 {- function to help construct the entire histogram -}
 constructStrHelper :: [Frequency] -> String -> String
 constructStrHelper fs str
   | frequencyListNotEmpty fs =
-    let newStr = ((reverse . ('\n':) . constructRow) fs) ++ str
+    let newStr = (('\n':) $ constructRow fs) ++ str
     in constructStrHelper (reduceFrequencyByOne fs) newStr
   | otherwise =
     str 
+
 
 {- function to construct the histogram -}
 constructString :: [Frequency] -> String
@@ -236,6 +266,7 @@ list (see type definition above), and then recursively construct the rows, using
 the frequencies as decreasing arguments -}
 histogram :: [Int] -> String
 histogram =  constructString . constructFrequencyList
+  where
 
 
 
