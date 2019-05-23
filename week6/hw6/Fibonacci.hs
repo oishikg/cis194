@@ -163,7 +163,7 @@ used for generating the rest of the stream. -}
 
 streamFromSeed :: (a -> a) -> a -> Stream a
 streamFromSeed unfold seed =
-  Cons seed (streamFromSeed unfold (unfold seed))
+  Cons seed $ streamFromSeed unfold (unfold seed)
 
 
 {- Exercise 5
@@ -178,7 +178,7 @@ nats :: Stream Integer
 which contains the infinite list of natural numbers 0, 1, 2, . . . -}
 
 nats :: Stream Integer
-nats = streamFromSeed (\n -> n + 1) 0
+nats = streamFromSeed (+ 1) 0
 
 {- Define the stream
 
@@ -207,12 +207,12 @@ it to the interleaving stream with the Cons constructor, and then construct the 
 of the stream by invoing interleaveStreams on the second stream, and the remaining
 part of the first stream -}
 
+interleaveStreams :: Stream a -> Stream a -> Stream a
 interleaveStreams (Cons v s) s' =
   Cons v (interleaveStreams s' s)
 
-testStream = interleaveStreams
-             (streamFromSeed (\n -> n) 0)
-             (streamFromSeed (\n -> n) 1)
+testStream = interleaveStreams (streamRepeat 0) (streamRepeat 0)
+                         
 
 {- we can use interleaveStreams to construct ruler owing to the following interesting
 observation.
@@ -233,11 +233,12 @@ The following definition of ruler captures this interleaving: -}
 
 ruler :: Stream Integer
 ruler =
-  constructRuler 0 where
-  constructRuler n =
-    interleaveStreams
-    (streamFromSeed (\n -> n) n)
-    (constructRuler (n + 1))
+  constructRuler 0
+  where
+    constructRuler n =
+      interleaveStreams
+      (streamRepeat n)
+      (constructRuler (n + 1))
 
 -- (think about the math behind this)
 
@@ -264,7 +265,7 @@ by noting that
 x = 0 + 1x + 0x^2 + 0x^3 + . . . . -} 
 
 x :: Stream Integer
-x = Cons 0 (Cons 1 (streamFromSeed (\n -> n) 0))
+x = Cons 0 $ Cons 1 $ streamRepeat 0
 
 {- 
 Define an instance of the Num type class for Stream Integer. Note that you will
@@ -299,16 +300,14 @@ B' (that is, the tail of B) by a0, and to this adding the result of
 multiplying A' (the tail of A) by B -}
 
 instance Num (Stream Integer) where
-  fromInteger n = Cons n (streamFromSeed (\n -> n) 0)
+  fromInteger n = Cons n (streamRepeat 0)
   
-  negate (Cons a0 s) = Cons (-a0) (negate s)
+  negate = streamMap negate
   
   (+) (Cons a0 s) (Cons b0 s') = Cons (a0 + b0) (s + s')
   
   (*) (Cons a0 restOfA) (sb @ (Cons b0 restOfB))
-    = Cons (a0 * b0) ((numTimesStream a0 restOfB) + restOfA * sb)
-    where
-      numTimesStream n (Cons v s') = Cons (n * v) (numTimesStream n s')
+    = Cons (a0 * b0) $ streamMap (* a0) restOfB + (restOfA * sb)
                                      
 {- The penultimate step is to implement an instance of the Fractional
 class for Stream Integer. Here the important method to define is
@@ -326,12 +325,18 @@ Of course, in general, this operation might not result in a stream
 of Integers. However, we will only be using this instance in cases
 where it does, so just use the div operation where appropriate -}
 
+-- instance Fractional (Stream Integer) where
+--   (/) (sa @ (Cons a0 restOfA)) (sb @ (Cons b0 restOfB)) =
+--     let q = fromInteger (a0 `div` b0) + numDivStream (restOfA - q * restOfB) b0
+--     in Cons (a0 `div` b0) (numDivStream (restOfA - q * restOfB) b0)
+--     where
+--       numDivStream (Cons v s') n = Cons (v `div` n) (numDivStream s' n)
+
 instance Fractional (Stream Integer) where
   (/) (sa @ (Cons a0 restOfA)) (sb @ (Cons b0 restOfB)) =
-    let q = fromInteger (a0 `div` b0) + numDivStream (restOfA - q * restOfB) b0
-    in Cons (a0 `div` b0) (numDivStream (restOfA - q * restOfB) b0)
-    where
-      numDivStream (Cons v s') n = Cons (v `div` n) (numDivStream s' n)
+    let q =
+          Cons (a0 `div` b0) $ streamMap (`div` b0) (restOfA + negate (q * restOfB))
+    in q
 
 {- Consider representing the Fibonacci numbers using a generating
 function,
@@ -364,8 +369,8 @@ fibs3 :: Stream Integer
 -- the closed form solution of F(x) must be expressed as a power series, following
 -- which we may match the coefficients term by term to get the required F_ n
 
--- fibs3 :: Stream Integer
--- fibs3 = (x) / () 
+fibs3 :: Stream Integer         
+fibs3 = x / ((streamRepeat 1) + negate x + negate (x * x))
 
 
 {- Exercise 7 (Optional)
@@ -412,7 +417,7 @@ fib4 n
   | n == 0 = 0
   | otherwise = 
     case (fibMatrix ^ n) of
-      Matrix e11 e12 e21 e22 -> e12
+      Matrix _ e12 _ _ -> e12
 
 
 
