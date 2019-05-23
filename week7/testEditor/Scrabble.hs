@@ -64,6 +64,8 @@ scorePair =
     ('K', 5) , ('k', 5) , ('J', 8) , ('j', 8) , ('X', 8) , ('x', 8) , ('Q', 10) ,
     ('q', 10) , ('Z', 10) , ('z', 10) ]
 
+
+
 --  much better ways to implement this, e.g. using a balanced binary tree
 score :: Char -> Score
 score c =
