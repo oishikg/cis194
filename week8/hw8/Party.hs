@@ -100,8 +100,8 @@ glCons emp (GL gs f) = GL (emp : gs) (f + empFun emp)
 instance Semigroup GuestList where
   (<>) (GL gs f) (GL gs' f') = GL (gs <> gs') (f + f')
 -- Although the type Fun is an alias for Integer, Fun is not an instance of
--- semigroup; thus we must explicitly prove the (+) opertaion instead of (<>), which
---  we could use for gs and gs' since they are lists 
+-- semigroup; thus we must explicitly use the (+) opertaion instead of (<>), which
+-- we could use for gs and gs' since they are lists 
 
 instance Monoid GuestList where
   mempty = GL mempty 0
@@ -146,55 +146,22 @@ gl3 = GL [Emp {empName = "Stan", empFun = 9},Emp {empName = "Bob", empFun = 2},
 -- from Week 7, or infer the proper type(s) from the remainder of this
 -- assignment.)
 
--- Sanity check before implementing the fold: Function to calculate # of nodes
-numNodes :: Tree a -> Integer
-numNodes (Node {subForest = []}) = 1
-numNodes (Node {rootLabel = r , subForest = ts}) =
-  1 + foldr (\t a -> numNodes t + a) 0 ts 
-  
--- Yet some more sanity check: Function to calculate height of the rose tree
-heightRoseTree :: Tree a -> Integer
-heightRoseTree (Node {subForest = []}) = 1
-heightRoseTree (Node {rootLabel = r , subForest = ts}) =
-  1 + foldr (\t a ->
-               let h = heightRoseTree t
-               in bool h a (h < a)) 0 ts
-  
 -- implementation of rose tree fold 
 treeFold :: (a -> [r] -> r) -> Tree a -> r
 treeFold node (Node {rootLabel = r , subForest = ts}) =
   node r (map (treeFold node) ts)
 
+-- sanity checks: implement standard accumulative functions with fold
 numNodesFold =
-  treeFold (\_ rs ->
-              case rs of
-                [] -> 1
-                _ -> (foldr (+) 0 rs) + 1)
+  treeFold (\_ rs -> (foldr (+) 0 rs) + 1)
 
 heightFold =
-  treeFold (\_ rs ->
-              case rs of
-                [] -> 1
-                _ -> maximum rs + 1)
+  treeFold (\_ rs -> (foldr (\a v -> bool a v (a < v)) 0 rs) + 1)
   
 sumFunFold =
   treeFold (\e rs -> empFun e + (foldr (+) 0 rs))
               
   
--- An alternative implementation that incorporates foldr in treeFold. Which is the
--- better implementation? 
-
-treeFoldAlternative :: b -> (r -> b -> b) -> (a -> b -> r) -> Tree a -> r
-treeFoldAlternative nil cons node (Node {rootLabel = r , subForest = ts}) =
-    node r (foldr cons nil (map (treeFoldAlternative nil cons node) ts))
-
--- sanity checks 
-numNodesFoldAlternative =
-  treeFoldAlternative 0 (\h a -> bool h a (h < a)) (\_ n -> n + 1)
-heightFoldAlternative =
-  treeFoldAlternative 0 (\h a -> bool h a (h < a)) (\_ n -> n + 1) 
-sumFunFoldAlternative =
-  treeFoldAlternative 0 (+) (\(Emp _ f) s -> f + s)
 
 {------------------------- some more context ... -------------------------}
 -- Now letfs actually derive an algorithm to solve this problem. Clearly
@@ -272,22 +239,10 @@ nextLevel b glPairs =
 
 maxFun :: Tree Employee -> GuestList
 maxFun ts =
-  let optPair = getOptimalPair ts
+  let optPair = treeFold nextLevel ts
   in moreFun (fst optPair) (snd optPair)
-  where
-    getOptimalPair =
-      treeFold 
-      (\e rs ->
-         case rs of
-           [] -> nextLevel e []
-           _ -> nextLevel e rs)
 
-  
--- implementing maxFunAlternative which uses treeFoldAlternative
-maxFunAlternative :: Tree Employee -> GuestList
-maxFunAlternative ts =
-  let optimalPair = treeFoldAlternative [] (:) (nextLevel) ts
-  in moreFun (fst optimalPair) (snd optimalPair) 
+
              
 
 {------------------------- QN 5 -------------------------}
