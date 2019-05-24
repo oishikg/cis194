@@ -199,16 +199,21 @@ jl5 = Append (Size 5)
        (Single (Size 1) 'O'))
 
 -- fold function for joinList
-joinListFold :: (Sized b, Monoid b) =>
-  r -> (b -> a -> r) -> (b -> r -> r -> r) -> JoinList b a -> r
-joinListFold empty single append Empty = empty
-joinListFold empty single append (Single m a) = single m a
-joinListFold empty single append (Append m l1 l2) =
-  append m
-  (joinListFold empty single append l1)
-  (joinListFold empty single append l2)
-
-
+joinListFold ::
+  (Sized b, Monoid b)
+  => r
+  -> (b -> a -> r)
+  -> (b -> r -> r -> r)
+  -> JoinList b a
+  -> r
+joinListFold empty single append = go
+  where
+    go Empty = empty
+    go (Single m a) = single m a
+    go (Append m l1 l2) =
+        append m
+        (joinListFold empty single append l1)
+        (joinListFold empty single append l2)
 
 
 
@@ -232,6 +237,8 @@ tag Empty          = mempty
 tag (Single m _)   = m
 tag (Append m _ _) = m
 
+-- Formally, Monoid constraint is too restrictive in this function. It's enough
+-- to have only Semigroup m here
 (+++) :: Monoid m => JoinList m a -> JoinList m a -> JoinList m a
 (+++) j1 j2 = Append (tag j1 <> tag j2) j1 j2
 
