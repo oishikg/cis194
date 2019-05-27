@@ -92,9 +92,7 @@ instance Functor Parser where
 -- p2 succeed).
 
 instance Applicative Parser where
-  pure a = Parser f
-    where
-      f _ = Just (a, "")
+  pure a = Parser (\_ -> Just (a, ""))
 
   (<*>) p1 p2 = Parser f
     where
@@ -130,8 +128,9 @@ instance Applicative Parser where
 -- Nothing
 
 
+
 abParser :: Parser (Char, Char)
-abParser =  (\a -> \b -> (a, b)) <$> (char 'a') <*> (char 'b')
+abParser =  ( , ) <$> (char 'a') <*> (char 'b')
 
 
 
@@ -147,7 +146,7 @@ abParser =  (\a -> \b -> (a, b)) <$> (char 'a') <*> (char 'b')
 -- *AParser> runParser abParser_ "aebcdf"
 -- Nothing
 
-abParser_ =  (\_ -> \_ -> ()) <$> (char 'a') <*> (char 'b')
+abParser_ =  (\_ _ -> ()) <$> (char 'a') <*> (char 'b')
 
 
 
@@ -160,7 +159,7 @@ abParser_ =  (\_ -> \_ -> ()) <$> (char 'a') <*> (char 'b')
         
 intPair :: Parser ([Integer])
 intPair =
-  (\d1 -> \_ -> \d2 -> [d1 , d2]) <$> (posInt) <*> (char ' ') <*> (posInt) 
+  (\d1 _ d2 -> [d1 , d2]) <$> (posInt) <*> (char ' ') <*> (posInt) 
 
 {------------------------- QN 4 -------------------------} 
 
