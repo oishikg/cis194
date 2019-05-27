@@ -6,7 +6,11 @@ module AParser where
 
 import           Control.Applicative
 
+import           Control.Monad 
+
 import           Data.Char
+
+import           Data.Bifunctor
 
 -- A parser for a value of type a is a function which takes a String
 -- represnting the input to be parsed, and succeeds or fails; if it
@@ -64,16 +68,12 @@ posInt = Parser f
 -- Hint: You may find it useful to implement a function
 -- first :: (a -> b) -> (a,c) -> (b,c)
 
-first :: (a -> b) -> (a,c) -> (b,c)
-first f (a , c) = (f a , c) 
+-- first :: (a -> b) -> (a,c) -> (b,c)
+-- first f (a , c) = (f a , c) 
 
 instance Functor Parser where
-  fmap f p = Parser g
-    where
-      g = \str ->
-            case (runParser p) str of
-              Nothing -> Nothing
-              Just p -> Just (first f p)
+  fmap f p = Parser $ (first f <$>) . (runParser p)
+    -- <$> above is for the Maybe instance of the functor context 
 
 
 {------------------------- QN 2 -------------------------}
@@ -92,7 +92,7 @@ instance Functor Parser where
 -- p2 succeed).
 
 instance Applicative Parser where
-  pure a = Parser (\s -> Just (a, s))
+  pure a = Parser $ \s -> Just (a, s)
 
   (<*>) p1 p2 = Parser f
     where
@@ -100,10 +100,7 @@ instance Applicative Parser where
             case (runParser p1 str) of
               Nothing -> Nothing
               Just (f', remStr) ->
-                case (runParser p2 remStr)  of
-                  Nothing -> Nothing
-                  Just p -> Just (first f' p)
-
+                (first f') <$> (runParser p2 remStr) --fmap for Maybe
 
 {------------------------- QN 3 -------------------------}
 
@@ -130,7 +127,7 @@ instance Applicative Parser where
 
 
 abParser :: Parser (Char, Char)
-abParser =  ( , ) <$> (char 'a') <*> (char 'b')
+abParser =  (,) <$> (char 'a') <*> (char 'b')
 
 
 
@@ -146,7 +143,8 @@ abParser =  ( , ) <$> (char 'a') <*> (char 'b')
 -- *AParser> runParser abParser_ "aebcdf"
 -- Nothing
 
-abParser_ =  (\_ _ -> ()) <$> (char 'a') <*> (char 'b')
+abParser_ = const () <$> abParser
+
 
 
 
@@ -188,17 +186,13 @@ intPair =
 -- may find useful
 
 instance Alternative Parser where
-  empty = Parser {runParser = \str -> Nothing}
+  empty = Parser {runParser = const Nothing}
   
   p1 <|> p2 = Parser f
     where
-      f = \str ->
-            -- run first parser
-            case (runParser p1 str) of
-              (r @ (Just _)) -> r
-            -- if first parser fail, run second parser
-              Nothing -> (runParser p2 str)
-
+      f str = 
+        (runParser p1 str) <|> (runParser p2 str) 
+      -- using the Maybe instance of Alternative 
 
 {------------------------- QN 5 -------------------------}
 
@@ -222,9 +216,7 @@ instance Alternative Parser where
 -- sophisticated parser for a small programming language!
 
 intOrUppercase :: Parser ()
-intOrUppercase = (toEmpty <$> posInt) <|> (toEmpty <$> satisfy isUpper)
-  where
-    toEmpty _ = ()
+intOrUppercase = void posInt <|> (void $ satisfy isUpper)
       
 
 
