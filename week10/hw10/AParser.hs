@@ -92,7 +92,7 @@ instance Functor Parser where
 -- p2 succeed).
 
 instance Applicative Parser where
-  pure a = Parser (\_ -> Just (a, ""))
+  pure a = Parser (\s -> Just (a, s))
 
   (<*>) p1 p2 = Parser f
     where
