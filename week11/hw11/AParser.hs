@@ -2,7 +2,7 @@
    due Monday, 1 April
 -}
 
-module AParser (Parser, runParser, satisfy, char, posInt) where
+
 
 import           Control.Applicative
 
