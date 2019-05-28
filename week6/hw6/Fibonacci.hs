@@ -370,7 +370,7 @@ fibs3 :: Stream Integer
 -- which we may match the coefficients term by term to get the required F_ n
 
 fibs3 :: Stream Integer         
-fibs3 = x / ((streamRepeat 1) + negate x + negate (x * x))
+fibs3 = x / ((fromInteger 1) + negate x + negate (x * x))
 
 
 {- Exercise 7 (Optional)
