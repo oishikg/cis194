@@ -58,7 +58,7 @@ import           Data.Char
 -- oneOrMore :: Parser a -> Parser [a]
 
 zeroOrMore :: Parser a -> Parser [a]
-zeroOrMore p = (oneOrMore p) <|> pure [] 
+zeroOrMore p = oneOrMore p <|> pure [] 
 
 oneOrMore :: Parser a -> Parser [a]
 oneOrMore p = (:) <$> p <*> (zeroOrMore p)
