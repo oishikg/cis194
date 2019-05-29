@@ -22,3 +22,6 @@ cabal.project.local~
 .ghc.environment.*
 TAGS
 *~
+lecture* 
+CHANGELOG.md
+Setup.hs
