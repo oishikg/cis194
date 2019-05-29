@@ -1,4 +1,4 @@
-# Revision history for hw5
+# Revision history for hw6
 
 ## 0.1.0.0 -- YYYY-mm-dd
 
