@@ -134,10 +134,9 @@ soldiersLost ::  [DieValue] -> [DieValue] -> (Army , Army)
 soldiersLost as ds = go (reverse $ sort as) (reverse $ sort ds)
   where
     go sortedAs sortedDs = 
-      (foldr
+      foldr
         (\(a , d) (ar , dr) ->
-           bool (ar + 1 , dr) (ar , dr + 1) (a > d)) --DieValue inherits Ord
-        (0 , 0)) (zip sortedAs sortedDs)
+           bool (ar + 1 , dr) (ar , dr + 1) (a > d)) (0 , 0) (zip sortedAs sortedDs)
 
 
 -- take the battlefield and the number of die rolls for the attackers and the
